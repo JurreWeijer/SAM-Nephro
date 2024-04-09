@@ -1,0 +1,92 @@
+# Experiment info
+task: 020_test_classification_model
+description: train the classification part of the model according to the final method
+method: classification_single_decoder
+
+# Set manual seed
+seed: 10
+
+# Set epochs
+epochs: 20
+
+#Define paths 
+results_dir: /hpc/dla_patho/home/jweijer/Internship-Jurre/results
+data_dir: "/hpc/dla_patho/home/jweijer/data"
+dataset: "UMC_Utrecht"
+
+# Data settings
+level: 2
+patch_size: 1024
+create_new: False
+include_original: True
+valid_size: 0.2
+
+batch_size: 1
+accumulation_steps: 8
+shuffle_dataloader: True
+pin_memory_dataloader: True
+
+# Augmentation settings 
+train_sampling: {"tubulus proximal" : 1,
+                 "tubulus distal" : 1,
+                 "tubulus atrophy" : 1,
+                 "glomerulus" : 1,
+                 "glomerulosclerosis" : 1,
+                 "vessel" : 1,
+                 "background" : 1,
+                }
+
+valid_sampling: {"tubulus proximal" : 0,
+                 "tubulus distal" : 0,
+                 "tubulus atrophy" : 0,
+                 "glomerulus" : 0,
+                 "glomerulosclerosis" : 0,
+                 "vessel" : 0,
+                 "background" : 0,
+                }
+
+classes: ["tubulus proximal",
+          "tubulus distal",
+          "tubulus atrophy",
+          "glomerulus",
+          "glomerulosclerosis",
+          "vessel",
+          "background",
+          ]
+
+# Model setting
+sam_type: "vit-b"
+model_checkpoint: ~
+cnn_encoder: ~ #"resnetsamencoder"
+
+freeze_image_encoder: True
+freeze_cnn_encoder: True
+freeze_prompt_encoder: True
+freeze_mask_decoder: "segmentation"
+
+# Optimization settings
+optimizer: Adam
+learning_rate: 1.0e-5
+weight_decay: 1.0e-4
+warmup_epochs: 3
+lr_decay: True
+
+# Segmentation loss 
+segmentation_loss: DiceBCELoss
+dice_weight: 0.5
+segmentation_weight: 0.0
+
+# Classification loss
+classification_loss: CE
+classification_weight: 1.0
+
+# IoU loss
+iou_loss: MSE
+iou_weight: 0.1
+
+# Trainer settings
+tolerance: 0.01
+progress_images: True
+num_progress_images: 4
+display_freq: 1
+early_stopping: False
