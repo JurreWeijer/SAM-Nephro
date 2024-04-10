@@ -1,11 +1,11 @@
-import sys
-sys.path.append("/hpc/dla_patho/home/jweijer/Internship-Jurre")
-
 import torch
 from torch.utils.data import DataLoader
 from torch.optim import Adam, AdamW
 import random
 import albumentations as A
+import yaml
+import shutil
+import argparse
 
 import os
 import matplotlib.pyplot as plt
@@ -14,9 +14,9 @@ from pathlib import Path
 import json
 from sklearn.model_selection import train_test_split
 
-from trainer import ClassificationTrainer
-from fine_tuning_classification.dataset import KidneyClassificationWSIDataset
-from loss import  DiceBCELoss
+from fine_tuning.trainer import ClassificationTrainer
+from fine_tuning.dataset import KidneyClassificationWSIDataset
+from fine_tuning.loss import  DiceBCELoss
 
 #from segment_anything.build_sam import build_sam_vit_b, build_sam_vit_h, build_sam_vit_l
 from models.build_sam_class import build_samclass_vit_b, build_samclass_vit_l, build_samclass_vit_h
@@ -70,7 +70,6 @@ def load_model(config, parameters_to_exclude):
 
 
 def load_data(config, paths, sampling):
-    
     
     dataset = KidneyClassificationWSIDataset(paths=paths,
                                              level=config['level'],
@@ -129,8 +128,8 @@ def load_trainer(model, train_loader, valid_loader, progress_dir):
     
     return trainer
 
-def load_config(config_name):
-    with open(CONFIG_PATH / config_name) as file:
+def load_config(config_path):
+    with open(config_path) as file:
         config = yaml.safe_load(file)
 
     return config
@@ -141,16 +140,17 @@ def save_config(result_dir, config):
         yaml.dump(config, file)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='train modified version of SAM for instance segmentation')
+    parser.add_argument("config_path", type=str, help="path to the config file")
+    args = parser.parse_args()
     
-    import yaml
-    import shutil
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    CONFIG_PATH = Path("/hpc/dla_patho/home/jweijer/Internship-Jurre/config/")
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    config_path = args.config_path
     
     print(f"load config file")
     config_name = "classification_configuration_new.yaml"
-    config = load_config(config_name)
+    config = load_config(config_path)
 
     #set manual seed
     torch.manual_seed(config['seed']) 
@@ -170,17 +170,14 @@ if __name__ == "__main__":
     if not os.path.exists(progress_dir):
         os.makedirs(progress_dir)
     
-    shutil.copy(CONFIG_PATH/config_name, progress_dir/'config.yaml')
+    shutil.copy(config_path, progress_dir/'config.yaml')
     
-    print("load model")  
-    parameters_to_exclude = ['mask_decoder.class_prediction_head.layers.2.weight',
-                             'mask_decoder.class_prediction_head.layers.2.bias',
-                        ]
-    
-    #parameters_to_exclude = []
+    print("load model") 
+    ### some parameters might have to be removed when starting training from a checkpoint 
+    parameters_to_exclude = []
 
     model = load_model(config, parameters_to_exclude)
-    model.to(DEVICE)
+    model.to(device)
     
     # Search for folders with the specified prefixes
     data_dir = Path(config['data_dir'])

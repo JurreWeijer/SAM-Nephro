@@ -9,16 +9,13 @@ import json
 
 from openslide import open_slide
 
-from inference.whole_slide_annotator import NeprhiTissueLabeledAnnotator
-from automatic_labeled_mask_generator import SamAutomaticLabeledMaskGenerator
+from inference.labeled_slide_annotator import NeprhoTissueLabeledAnnotator
+from inference.automatic_labeled_mask_generator import SamAutomaticLabeledMaskGenerator
 from inference.predictor_classification import ClassificationSamPredictor
 from common.conversions import labeled_polygons_to_geojson 
 from models.build_sam_class import build_samclass_vit_b
 import argparse
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-LEVEL = 2
-PATCH_SIZE = 1024
 CLASSES = ["tubulus proximal",
           "tubulus distal",
           "tubulus atrophy",
@@ -27,7 +24,6 @@ CLASSES = ["tubulus proximal",
           "vessel",
           "background",
           ]
-    
 
 def load_model(checkpoint):
     
@@ -62,16 +58,21 @@ if __name__ == "__main__":
     parser.add_argument("checkpoint", type=str)
     parser.add_argument('--iou_thresh', type=int, default=0.8, help='treshold for the predicted iou during automatic mask generation')
     parser.add_argument('--stability_thresh', type=int, default=0.85, help='treshold for the stability score during automatic mask generation')
+    parser.add_argument('--level', type=int, default=2, help='magnification level of the extracted patches, keep consitent with training values')
+    parser.add_argument('--patch_size', type=int, default=1024, help='patch size of the extracted patches, keep consistent with training values')
     args = parser.parse_args()
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    level = args.level
+    patch_size = args.patch_size
 
     print("load model")
     model = load_model(args.checkpoint)
-    model.to(DEVICE)  
+    model.to(device)  
     
     print("create mask generator")
     mask_generator = create_automatic_generator(model, args.iou_thresh, args.stability_thresh)
-    slide_annotator = NeprhiTissueLabeledAnnotator(mask_generator=mask_generator, classes=CLASSES)
+    slide_annotator = NeprhoTissueLabeledAnnotator(mask_generator=mask_generator, classes=CLASSES)
     
     samples = [folder for folder in args.data_dir.glob('*') if folder.is_dir()]
     samples.sort()
@@ -90,11 +91,11 @@ if __name__ == "__main__":
             tissue_mask = None   
         
         print("generate annotations")
-        slide_annotator.set_slide(slide=slide, tissue_mask=tissue_mask, level=LEVEL, patch_size=PATCH_SIZE)
+        slide_annotator.set_slide(slide=slide, tissue_mask=tissue_mask, level=level, patch_size=level)
         polygons = slide_annotator.generate_mask()
         
         
-        feature_collection = labeled_polygons_to_geojson(polygons, LEVEL)
+        feature_collection = labeled_polygons_to_geojson(polygons, level)
             
         output_file = path / f"automatic_inferred_annotations.geojson"
         with open(output_file, 'w') as f:

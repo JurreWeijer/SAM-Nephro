@@ -12,7 +12,7 @@ import numpy as np
 from common.utils import calc_resolution
 from common.utils import grid_generator
 
-class NeprhiTissueLabeledAnnotator():
+class NeprhoTissueLabeledAnnotator():
     def __init__(
         self,
         mask_generator,
