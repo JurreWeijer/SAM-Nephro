@@ -1,6 +1,6 @@
 # Experiment info
-task: 020_test_classification_model
-description: train the classification part of the model according to the final method
+task: full_model_checkpoint_encoder
+description: train the full model including encoder
 method: classification_single_decoder
 
 # Set manual seed
@@ -19,6 +19,7 @@ level: 2
 patch_size: 1024
 create_new: False
 include_original: True
+num_progress_images: 4
 valid_size: 0.2
 
 batch_size: 1
@@ -56,13 +57,14 @@ classes: ["tubulus proximal",
 
 # Model setting
 sam_type: "vit-b"
-model_checkpoint: ~
+sam_chekcpoint: "..." # add path to sam checkpoints
+model_checkpoint: "..." #add checkpoint path to pre-trained model, if using sam weight add none
 cnn_encoder: ~ #"resnetsamencoder"
 
-freeze_image_encoder: True
+freeze_image_encoder: False
 freeze_cnn_encoder: True
 freeze_prompt_encoder: True
-freeze_mask_decoder: "segmentation"
+freeze_mask_decoder: False
 
 # Optimization settings
 optimizer: Adam
@@ -74,11 +76,11 @@ lr_decay: True
 # Segmentation loss 
 segmentation_loss: DiceBCELoss
 dice_weight: 0.5
-segmentation_weight: 0.0
+segmentation_weight: 0.5
 
 # Classification loss
 classification_loss: CE
-classification_weight: 1.0
+classification_weight: 0.5
 
 # IoU loss
 iou_loss: MSE
@@ -86,7 +88,6 @@ iou_weight: 0.1
 
 # Trainer settings
 tolerance: 0.01
-progress_images: True
-num_progress_images: 4
+progress_images: False
 display_freq: 1
 early_stopping: False

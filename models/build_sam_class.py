@@ -10,8 +10,8 @@ from typing import Any, Dict, List, Tuple
 from functools import partial
 import copy
 
-from segment_anything.modeling import ImageEncoderViT, MaskDecoder, PromptEncoder, TwoWayTransformer
-from fine_tuning_classification.class_decoder import MaskClassDecoder
+from segment_anything.modeling import ImageEncoderViT, PromptEncoder, TwoWayTransformer
+from fine_tuning.class_decoder import MaskClassDecoder
 
 
 def build_samclass_vit_h(classes, freeze_image_encoder, freeze_prompt_encoder, freeze_mask_decoder, checkpoint=None):
@@ -54,10 +54,10 @@ def build_samclass_vit_b(classes, freeze_image_encoder, freeze_prompt_encoder, f
     )
 
 sam_model_registry = {
-    "default": build_samclasssingle_vit_h,
-    "vit_h": build_samclasssingle_vit_h,
-    "vit_l": build_samclasssingle_vit_l,
-    "vit_b": build_samclasssingle_vit_b,
+    "default": build_samclass_vit_h,
+    "vit_h": build_samclass_vit_h,
+    "vit_l": build_samclass_vit_l,
+    "vit_b": build_samclass_vit_b,
 }
 
 def _build_sam_class(

@@ -15,7 +15,7 @@ from torchvision.ops.boxes import batched_nms, box_area  # type: ignore
 from typing import Any, Dict, List, Optional, Tuple
 
 from models.build_sam_class import SamClass
-from inference.predictor_classification import ClassificationSamPredictor
+from inference.predictor_labeled import ClassificationSamPredictor
 from segment_anything.utils.amg import (
     MaskData,
     area_from_rle,

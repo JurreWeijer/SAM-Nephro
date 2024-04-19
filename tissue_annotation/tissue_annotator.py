@@ -7,7 +7,7 @@ from shapely.geometry import Polygon
 import numpy as np
 
 from common.utils import grid_generator
-from inference.whole_slide_annotator import from_mask_to_polygon
+from inference.labeled_slide_annotator import from_mask_to_polygon
 from common.utils import calc_resolution
 
 class NephroTissueAnnotator():
