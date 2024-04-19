@@ -27,9 +27,9 @@ model_registry =  {'vit-h': build_samclass_vit_h,
                    'vit-b': build_samclass_vit_b,
                 }
 
-sam_checkpoints = {'vit-h': ".../sam_vit_h_4b8939.pth",
-                   'vit-l': ".../sam_vit_l_0b3195.pth",
-                   'vit-b': ".../sam_vit_b_01ec64.pth",
+sam_checkpoints = {'vit-h': "sam_vit_h_4b8939.pth", 
+                   'vit-l': "sam_vit_l_0b3195.pth",
+                   'vit-b': "sam_vit_b_01ec64.pth",
                 }
 
 optimizer_registry = {"Adam": Adam,
@@ -40,11 +40,11 @@ loss_registry = {"DiceBCELoss": DiceBCELoss,
                  "MSE": torch.nn.MSELoss,
                 }
 
-
 def load_model(config, parameters_to_exclude):
     
+    sam_checkpoints_path = Path(config['sam_chekcpoint'])
     if config['model_checkpoint'] == None: 
-        model_checkpoint = sam_checkpoints[config['sam_type']]
+        model_checkpoint = sam_checkpoints_path / sam_checkpoints[config['sam_type']]
     else:
         model_checkpoint = None
     
